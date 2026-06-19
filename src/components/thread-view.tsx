@@ -26,13 +26,15 @@ export default function ThreadView({
   const { isFocused } = useFocus({ id: focusId, autoFocus: false });
   const { focus } = useFocusManager();
   const listRef = useRef<ScrollListRef>(null);
+  const [threadData, setThreadData] = useState<Thread | undefined>(undefined);
   const [replyItems, setThreadItems] = useState<ThreadItem[]>([]);
-  const [replyCount, setReplyCount] = useState(0);
+  const [loadedReplyCount, setLoadedReplyCount] = useState(0);
   const [tipsCount, setTipsCount] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isTipsVisible, setTipsVisible] = useState(tips ?? true);
+  const [isPoOnly, setIsPoOnly] = useState(false);
 
   const removeTips = (replies: ThreadItem[]) =>
     replies.filter((reply) => reply.user_hash !== 'Tips');
@@ -42,7 +44,7 @@ export default function ThreadView({
   });
 
   useEffect(() => {
-    setReplyCount(
+    setLoadedReplyCount(
       replyItems.filter((reply) => reply.user_hash !== 'Tips').length,
     );
     if (isTipsVisible) {
@@ -55,8 +57,9 @@ export default function ThreadView({
   useEffect(() => {
     setSelectedIndex(0);
     setPage(1);
-    client
-      .getThread(thread.id, 1)
+    setIsLoading(true);
+
+    (isPoOnly ? client.getPo(thread.id, 1) : client.getThread(thread.id, 1))
       .then((data) => {
         let replies = data.Replies;
         if (!isTipsVisible) {
@@ -64,20 +67,24 @@ export default function ThreadView({
         }
 
         setThreadItems([data, ...replies]);
+        setThreadData(data);
       })
       .catch(() => {
         setThreadItems([]);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-  }, [thread]);
+  }, [thread, isPoOnly]);
 
   useEffect(() => {
-    if (page === 1 || replyCount === thread.ReplyCount) {
+    if (page === 1 || loadedReplyCount === (threadData ?? thread).ReplyCount) {
       return;
     }
 
     setIsLoading(true);
-    client
-      .getThread(thread.id, page)
+
+    (isPoOnly ? client.getPo(thread.id, 1) : client.getThread(thread.id, page))
       .then((data) => {
         setThreadItems((previous) => {
           const existingIds = new Set(previous.map((reply) => reply.id));
@@ -100,7 +107,7 @@ export default function ThreadView({
   }, [page]);
 
   useInput(
-    (_input, key) => {
+    (input, key) => {
       if (key.upArrow) {
         setSelectedIndex((previous) => Math.max(previous - 1, 0));
       }
@@ -112,10 +119,14 @@ export default function ThreadView({
         if (
           selectedIndex === replyItems.length - 1 &&
           !isLoading &&
-          replyCount < (thread.ReplyCount ?? Infinity)
+          loadedReplyCount < ((threadData ?? thread).ReplyCount ?? Infinity)
         ) {
           setPage((previousPage) => previousPage + 1);
         }
+      }
+
+      if (input === 'p') {
+        setIsPoOnly((previous) => !previous);
       }
     },
     { isActive: isFocused },
@@ -128,12 +139,15 @@ export default function ThreadView({
         backgroundColor={theme.headerBackground}
         paddingBottom={1}
       >
-        <Text>{' '.repeat(6)}</Text>
+        <Text bold color={theme.header}>
+          {isPoOnly ? '只看PO' : ' '.repeat(6)}
+        </Text>
         <Text bold color={theme.header}>
           No.{thread.id}
         </Text>
         <Text bold color={theme.header}>
-          {selectedIndex + 1} / {(thread.ReplyCount ?? 0) + 1 + tipsCount}
+          {selectedIndex + 1} /{' '}
+          {((threadData ?? thread).ReplyCount ?? 0) + 1 + tipsCount}
         </Text>
       </Box>
       <ScrollList ref={listRef} selectedIndex={selectedIndex}>
