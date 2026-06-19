@@ -68,11 +68,7 @@ export default function App() {
           <ForumView id="forum-view" forum={selectedForum} client={client} />
         ) : (
           <Box
-            flexGrow={1}
             height="100%"
-            borderStyle="round"
-            paddingX={1}
-            borderColor={defaultTheme.border}
           />
         )}
       </Box>

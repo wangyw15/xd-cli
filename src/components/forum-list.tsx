@@ -3,6 +3,7 @@ import { Box, Text, useFocus, useInput } from 'ink';
 import { ScrollList, type ScrollListRef } from 'ink-scroll-list';
 import type { Forum, ForumInfo } from '@/api/types';
 import { useTheme } from '@/theme';
+import { stripHtmlTags } from '@/utils';
 
 type ForumListProps = {
   id?: string;
@@ -40,49 +41,17 @@ export default function ForumList({
   const { isFocused } = useFocus({ id, autoFocus: true });
   const listRef = useRef<ScrollListRef>(null);
   const items = buildItems(forums);
-  const firstSubIndex = items.findIndex((item) => item.type === 'sub');
-  const [selectedIndex, setSelectedIndex] = useState(
-    firstSubIndex === -1 ? 0 : firstSubIndex,
-  );
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (
-      items.length > 0 &&
-      (selectedIndex >= items.length || items[selectedIndex]?.type !== 'sub')
-    ) {
-      setSelectedIndex(firstSubIndex === -1 ? 0 : firstSubIndex);
-    }
-  }, [firstSubIndex, items, selectedIndex]);
-
-  const findNextSubIndex = (from: number): number => {
-    for (let index = from + 1; index < items.length; index++) {
-      if (items[index]?.type === 'sub') {
-        return index;
-      }
-    }
-
-    return from;
-  };
-
-  const findPreviousSubIndex = (from: number): number => {
-    for (let index = from - 1; index >= 0; index--) {
-      if (items[index]?.type === 'sub') {
-        return index;
-      }
-    }
-
-    return from;
-  };
 
   useInput(
     (_input, key) => {
       if (key.upArrow) {
-        setSelectedIndex((previous) => findPreviousSubIndex(previous));
+        setSelectedIndex((previous) => Math.max(previous - 1, 0));
       }
 
       if (key.downArrow) {
-        setSelectedIndex((previous) => findNextSubIndex(previous));
+        setSelectedIndex((previous) => Math.min(previous + 1, items.length - 1));
       }
 
       if (key.return) {
@@ -98,11 +67,9 @@ export default function ForumList({
 
   return (
     <Box
-      width="20%"
+      width="20"
       height="100%"
-      borderStyle="round"
       paddingX={1}
-      borderColor={isFocused ? theme.borderFocused : theme.border}
       flexDirection="column"
     >
       <Box justifyContent="center" backgroundColor={theme.headerBackground}>
@@ -112,30 +79,22 @@ export default function ForumList({
       </Box>
       <ScrollList ref={listRef} selectedIndex={selectedIndex}>
         {items.map((item, index) => {
-          if (item.type === 'header') {
-            return (
-              <Text key={item.id} bold color={theme.foreground}>
-                {item.name}
-              </Text>
-            );
-          }
-
-          const isSelected = index === selectedIndex;
+          const isSelected = index === selectedIndex && isFocused;
           const isActive = index === activeIndex;
+          const isHeader = item.type === "header";
+
           return (
-            <Text
-              key={item.id}
-              color={
-                isSelected
-                  ? theme.selected
-                  : isActive
-                    ? theme.active
-                    : theme.foreground
-              }
-            >
-              {'  '}
-              {item.name}
-            </Text>
+            <Box width="100%" backgroundColor={isSelected ? theme.selectedBackground : undefined}>
+              <Text
+                key={item.id}
+                color={
+                  isActive ? theme.active : (isHeader ? theme.forumListHeader : theme.forumListSub)
+                }
+              >
+                {isHeader ? '' : '  '}
+                {stripHtmlTags(item.name)}
+              </Text>
+            </Box>
           );
         })}
       </ScrollList>
