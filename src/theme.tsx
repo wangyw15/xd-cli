@@ -17,7 +17,6 @@ export type Theme = {
   sage: string;
   link: string;
   admin: string;
-  // Po
   replyBackground: string;
 };
 
@@ -28,7 +27,7 @@ export const defaultTheme: Theme = {
   header: '#CC0000',
   headerBackground: '#F0E68C',
   active: '#FF6600',
-  selectedBackground: '#eeaa88',
+  selectedBackground: '#e7d0c4',
 
   forumListHeader: '#cc0000',
   forumListSub: '#0077dd',
@@ -36,7 +35,6 @@ export const defaultTheme: Theme = {
   sage: '#D85030',
   link: '#0000EE',
   admin: '#FF0000',
-  // po: '#008000',
   replyBackground: '#FFF8DC',
 };
 
@@ -45,3 +43,22 @@ export const ThemeContext = createContext<Theme>(defaultTheme);
 export const useTheme = (): Theme => useContext(ThemeContext);
 
 export const ThemeProvider = ThemeContext.Provider;
+
+// themes
+export const pttTheme: Theme = {
+  name: 'ptt',
+  background: '#000000',
+  foreground: '#999900',
+  header: '#ffff66',
+  headerBackground: '#0c0a66',
+  active: '#FF6600',
+  selectedBackground: '#5d5d5d',
+
+  forumListHeader: '#aaaaaa',
+  forumListSub: '#aaaaaa',
+
+  sage: '#D85030',
+  link: '#0000EE',
+  admin: '#FF0000',
+  replyBackground: '#111111',
+}

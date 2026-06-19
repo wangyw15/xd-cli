@@ -5,7 +5,7 @@ import type { Forum, ForumInfo, ForumThread } from '@/api/types';
 import ForumList from '@/components/forum-list';
 import ForumView from '@/components/forum-view';
 import ThreadView from '@/components/thread-view';
-import { ThemeProvider, defaultTheme } from '@/theme';
+import { ThemeProvider, defaultTheme, pttTheme } from '@/theme';
 
 const client = new NmbxdClient();
 
@@ -13,6 +13,11 @@ export default function App() {
   const { stdout } = useStdout();
   const { exit } = useApp();
   const { focus } = useFocusManager();
+
+  const themes = [
+    defaultTheme,
+    pttTheme,
+  ];
 
   const [width, setWidth] = useState(stdout.columns);
   const [height, setHeight] = useState(stdout.rows);
@@ -24,6 +29,8 @@ export default function App() {
     undefined,
   );
   const [isForumListVisible, setIsForumListVisible] = useState(true);
+  const [theme, setTheme] = useState(defaultTheme);
+  const [themeIndex, setThemeIndex] = useState(0);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   stdout.on('resize', () => {
@@ -50,6 +57,10 @@ export default function App() {
     client.getForumList().then(setForums);
   }, []);
 
+  useEffect(() => {
+    setTheme(themes[themeIndex]);
+  }, [themeIndex]);
+
   useInput((input, key) => {
     if (input === 'q' || key.escape) {
       if (selectedThread) {
@@ -63,15 +74,19 @@ export default function App() {
     if (input === 's') {
       setIsForumListVisible((previous) => !previous);
     }
+
+    if (input === 't') {
+      setThemeIndex((previous) => previous === themes.length - 1 ? 0 : previous + 1);
+    }
   });
 
   return (
-    <ThemeProvider value={defaultTheme}>
+    <ThemeProvider value={theme}>
       <Box
         width={width}
         height={height}
         flexDirection="row"
-        backgroundColor={defaultTheme.background}
+        backgroundColor={theme.background}
       >
         <Box
           width="100%"
