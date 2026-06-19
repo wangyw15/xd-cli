@@ -4,6 +4,7 @@ import { NmbxdClient } from '@/api/client.js';
 import type { Forum, ForumInfo } from '@/api/types';
 import ForumList from '@/components/forum-list';
 import ForumView from '@/components/forum-view';
+import { ThemeProvider, defaultTheme } from '@/theme';
 
 const client = new NmbxdClient();
 
@@ -51,23 +52,30 @@ export default function App() {
   });
 
   return (
-    <Box width={width} height={height} flexDirection="row">
-      <ForumList
-        id="forum-list"
-        forums={forums}
-        onSelectForum={setSelectedForum}
-      />
-      {selectedForum ? (
-        <ForumView id="forum-view" forum={selectedForum} client={client} />
-      ) : (
-        <Box
-          flexGrow={1}
-          height="100%"
-          borderStyle="round"
-          paddingX={1}
-          borderColor="gray"
+    <ThemeProvider value={defaultTheme}>
+      <Box
+        width={width}
+        height={height}
+        flexDirection="row"
+        backgroundColor={defaultTheme.background}
+      >
+        <ForumList
+          id="forum-list"
+          forums={forums}
+          onSelectForum={setSelectedForum}
         />
-      )}
-    </Box>
+        {selectedForum ? (
+          <ForumView id="forum-view" forum={selectedForum} client={client} />
+        ) : (
+          <Box
+            flexGrow={1}
+            height="100%"
+            borderStyle="round"
+            paddingX={1}
+            borderColor={defaultTheme.border}
+          />
+        )}
+      </Box>
+    </ThemeProvider>
   );
 }

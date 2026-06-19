@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Text, useFocus, useInput } from 'ink';
+import { ScrollList, type ScrollListRef } from 'ink-scroll-list';
 import type { Forum, ForumInfo } from '@/api/types';
-import { ScrollList, ScrollListRef } from 'ink-scroll-list';
+import { useTheme } from '@/theme';
 
 type ForumListProps = {
   id?: string;
@@ -35,6 +36,7 @@ export default function ForumList({
   forums,
   onSelectForum,
 }: ForumListProps) {
+  const theme = useTheme();
   const { isFocused } = useFocus({ id, autoFocus: true });
   const listRef = useRef<ScrollListRef>(null);
   const items = buildItems(forums);
@@ -63,7 +65,7 @@ export default function ForumList({
     return from;
   };
 
-  const findPrevSubIndex = (from: number): number => {
+  const findPreviousSubIndex = (from: number): number => {
     for (let index = from - 1; index >= 0; index--) {
       if (items[index]?.type === 'sub') {
         return index;
@@ -76,7 +78,7 @@ export default function ForumList({
   useInput(
     (_input, key) => {
       if (key.upArrow) {
-        setSelectedIndex((previous) => findPrevSubIndex(previous));
+        setSelectedIndex((previous) => findPreviousSubIndex(previous));
       }
 
       if (key.downArrow) {
@@ -100,28 +102,36 @@ export default function ForumList({
       height="100%"
       borderStyle="round"
       paddingX={1}
-      borderColor={isFocused ? 'whiteBright' : 'gray'}
+      borderColor={isFocused ? theme.borderFocused : theme.border}
       flexDirection="column"
     >
-      <Box justifyContent="center">
-        <Text bold>版面</Text>
+      <Box justifyContent="center" backgroundColor={theme.headerBackground}>
+        <Text bold color={theme.header}>
+          版面
+        </Text>
       </Box>
       <ScrollList ref={listRef} selectedIndex={selectedIndex}>
         {items.map((item, index) => {
-          const isSelected = index === selectedIndex;
-          const isActive = index === activeIndex;
           if (item.type === 'header') {
             return (
-              <Text key={item.id} bold>
+              <Text key={item.id} bold color={theme.foreground}>
                 {item.name}
               </Text>
             );
           }
 
+          const isSelected = index === selectedIndex;
+          const isActive = index === activeIndex;
           return (
             <Text
               key={item.id}
-              color={isSelected ? 'blue' : isActive ? 'yellow' : undefined}
+              color={
+                isSelected
+                  ? theme.selected
+                  : isActive
+                    ? theme.active
+                    : theme.foreground
+              }
             >
               {'  '}
               {item.name}

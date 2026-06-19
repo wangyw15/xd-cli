@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Text, useFocus, useInput } from 'ink';
-import { ScrollList, ScrollListRef } from 'ink-scroll-list';
-import { NmbxdClient } from '@/api/client';
+import { ScrollList, type ScrollListRef } from 'ink-scroll-list';
 import type { ForumInfo, ForumThread } from '@/api/types';
+import type { NmbxdClient } from '@/api/client';
+import { useTheme } from '@/theme';
 
 type ForumViewProps = {
   id?: string;
@@ -11,6 +12,7 @@ type ForumViewProps = {
 };
 
 export default function ForumView({ id, forum, client }: ForumViewProps) {
+  const theme = useTheme();
   const { isFocused } = useFocus({ id, autoFocus: false });
   const listRef = useRef<ScrollListRef>(null);
   const [page, setPage] = useState(1);
@@ -66,12 +68,18 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
       height="100%"
       borderStyle="round"
       paddingX={1}
-      borderColor={isFocused ? 'whiteBright' : 'gray'}
+      borderColor={isFocused ? theme.borderFocused : theme.border}
+      backgroundColor={theme.background}
       flexDirection="column"
     >
-      <Box justifyContent="space-between">
-        <Text bold>{forum.showName || forum.name}</Text>
-        <Text>第 {page} 页</Text>
+      <Box
+        justifyContent="space-between"
+        backgroundColor={theme.headerBackground}
+      >
+        <Text bold color={theme.header}>
+          {forum.showName.length > 0 ? forum.showName : forum.name}
+        </Text>
+        <Text color={theme.foreground}>第 {page} 页</Text>
       </Box>
       <ScrollList ref={listRef} selectedIndex={selectedIndex}>
         {threads.map((thread, index) => {
@@ -81,22 +89,24 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
               width="100%"
               key={thread.id}
               borderStyle="round"
-              borderColor={isSelected ? 'blue' : undefined}
+              borderColor={isSelected ? theme.selected : theme.border}
+              backgroundColor={theme.replyBackground}
+              flexDirection="column"
+              paddingBottom={1}
             >
-              <Box flexDirection="column" paddingBottom={1}>
-                <Box flexDirection="row">
-                  <Text>
-                    {thread.user_hash} {thread.now} [{thread.ReplyCount}]
-                  </Text>
+              <Box flexDirection="row" justifyContent="space-between">
+                <Text color={theme.foreground}>
+                  {thread.user_hash} {thread.now}
+                </Text>
+                <Text color={theme.foreground}>[{thread.ReplyCount}]</Text>
+              </Box>
+              {thread.sage === 1 ? (
+                <Box>
+                  <Text color={theme.sage}>SAGE</Text>
                 </Box>
-                {thread.sage === 1 ? (
-                  <Box>
-                    <Text color="red">SAGE</Text>
-                  </Box>
-                ) : undefined}
-                <Box paddingTop={1}>
-                  <Text>{thread.content}</Text>
-                </Box>
+              ) : undefined}
+              <Box paddingTop={1}>
+                <Text color={theme.foreground}>{thread.content}</Text>
               </Box>
             </Box>
           );
