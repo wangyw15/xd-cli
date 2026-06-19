@@ -14,10 +14,7 @@ export default function App() {
   const { exit } = useApp();
   const { focus } = useFocusManager();
 
-  const themes = [
-    defaultTheme,
-    pttTheme,
-  ];
+  const themes = [defaultTheme, pttTheme];
 
   const [width, setWidth] = useState(stdout.columns);
   const [height, setHeight] = useState(stdout.rows);
@@ -39,11 +36,11 @@ export default function App() {
   });
 
   useEffect(() => {
-    stdout.write('\x1B[?1049h');
+    stdout.write('\u{1B}[?1049h');
     forceUpdate();
 
     return () => {
-      stdout.write('\x1B[?1049l');
+      stdout.write('\u{1B}[?1049l');
     };
   }, [stdout]);
 
@@ -54,7 +51,7 @@ export default function App() {
   }, [selectedForum, focus]);
 
   useEffect(() => {
-    client.getForumList().then(setForums);
+    void client.getForumList().then(setForums);
   }, []);
 
   useEffect(() => {
@@ -66,17 +63,17 @@ export default function App() {
       if (selectedThread) {
         setSelectedThread(undefined);
         focus('forum-view');
-      } else{
+      } else {
         exit();
       }
     }
 
     if (input === 's') {
       setIsForumListVisible((previous) => !previous);
-    }
-
-    if (input === 't') {
-      setThemeIndex((previous) => previous === themes.length - 1 ? 0 : previous + 1);
+    } else if (input === 't') {
+      setThemeIndex((previous) =>
+        previous === themes.length - 1 ? 0 : previous + 1,
+      );
     }
   });
 

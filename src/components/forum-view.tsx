@@ -13,7 +13,12 @@ type ForumViewProps = {
   onSelectThread?: (forum: ForumThread) => void;
 };
 
-export default function ForumView({ id, forum, client, onSelectThread }: ForumViewProps) {
+export default function ForumView({
+  id,
+  forum,
+  client,
+  onSelectThread,
+}: ForumViewProps) {
   const theme = useTheme();
   const { isFocused } = useFocus({ id, autoFocus: false });
   const listRef = useRef<ScrollListRef>(null);
@@ -41,9 +46,9 @@ export default function ForumView({ id, forum, client, onSelectThread }: ForumVi
     setIsLoading(true);
     client
       .showf(Number(forum.id), page)
-      .then((data) => setThreads(((previous) => {
-        return [...previous, ...data];
-      })))
+      .then((data) => {
+        setThreads((previous) => [...previous, ...data]);
+      })
       .catch(() => {
         // Keep existing data on error
       })
@@ -103,7 +108,9 @@ export default function ForumView({ id, forum, client, onSelectThread }: ForumVi
             >
               <Box flexDirection="row" justifyContent="space-between">
                 <Box>
-                  <Text color={thread.admin > 0 ? theme.admin : theme.foreground}>
+                  <Text
+                    color={thread.admin > 0 ? theme.admin : theme.foreground}
+                  >
                     {thread.user_hash}
                   </Text>
                   <Text color={theme.foreground}> {thread.now}</Text>

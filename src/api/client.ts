@@ -38,14 +38,14 @@ export class NmbxdClient {
 
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {};
-    if (this.userhash) {
-      headers['Cookie'] = `userhash=${encodeURIComponent(this.userhash)}`;
+    if (this.userhash !== undefined && this.userhash !== '') {
+      headers.Cookie = `userhash=${encodeURIComponent(this.userhash)}`;
     }
 
     return headers;
   }
 
-  private buildURL(path: string, parameters?: QueryParameters): URL {
+  private buildUrl(path: string, parameters?: QueryParameters): URL {
     const url = new URL(path, this.baseUrl);
     if (parameters) {
       for (const [key, value] of Object.entries(parameters)) {
@@ -59,7 +59,7 @@ export class NmbxdClient {
   }
 
   private async get<T>(path: string, parameters?: QueryParameters): Promise<T> {
-    const response = await fetch(this.buildURL(path, parameters), {
+    const response = await fetch(this.buildUrl(path, parameters), {
       headers: this.getHeaders(),
     });
     return response.json() as Promise<T>;
@@ -71,7 +71,7 @@ export class NmbxdClient {
           ([, value]) => value !== undefined && value !== null,
         )
       : [];
-    const response = await fetch(this.buildURL(path), {
+    const response = await fetch(this.buildUrl(path), {
       method: 'POST',
       headers: this.getHeaders(),
       body: new URLSearchParams(
@@ -79,6 +79,30 @@ export class NmbxdClient {
       ),
     });
     return response.json() as Promise<T>;
+  }
+
+  private buildFormData(
+    options: PostThreadOptions | ReplyThreadOptions,
+  ): FormData {
+    const form = new FormData();
+    form.set('name', options.name ?? '');
+    form.set('title', options.title ?? '');
+    form.set('content', options.content);
+    if ('fid' in options) {
+      form.set('fid', String(options.fid));
+    } else {
+      form.set('resto', String(options.resto));
+    }
+
+    if (options.water !== undefined) {
+      form.set('water', options.water ? 'true' : '');
+    }
+
+    if (options.image) {
+      form.set('image', options.image);
+    }
+
+    return form;
   }
 
   setUserhash(userhash: string | undefined): void {
@@ -145,35 +169,11 @@ export class NmbxdClient {
       redirect: 'manual',
     });
     const location = response.headers.get('location');
-    if (!location) {
+    if (location === null) {
       throw new Error('No redirect location found');
     }
 
-    return new URL(location, COVER_URL).toString();
-  }
-
-  private buildFormData(
-    options: PostThreadOptions | ReplyThreadOptions,
-  ): FormData {
-    const form = new FormData();
-    form.set('name', options.name ?? '');
-    form.set('title', options.title ?? '');
-    form.set('content', options.content);
-    if ('fid' in options) {
-      form.set('fid', String(options.fid));
-    } else {
-      form.set('resto', String(options.resto));
-    }
-
-    if (options.water !== undefined) {
-      form.set('water', options.water ? 'true' : '');
-    }
-
-    if (options.image) {
-      form.set('image', options.image);
-    }
-
-    return form;
+    return new URL(location, COVER_URL).href;
   }
 
   async postThread(options: PostThreadOptions): Promise<string> {

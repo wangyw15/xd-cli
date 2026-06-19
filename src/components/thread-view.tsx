@@ -26,9 +26,8 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  const calculateReplyCount = () => {
-    return replyItems.filter((reply) => reply.user_hash === 'Tips').length;
-  }
+  const calculateReplyCount = () =>
+    replyItems.filter((reply) => reply.user_hash === 'Tips').length;
 
   useEffect(() => {
     focus(focusId);
@@ -83,11 +82,15 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
       }
 
       if (key.downArrow) {
-        setSelectedIndex((previous) => Math.min(previous + 1, replyItems.length - 1));
-        if (selectedIndex === replyItems.length - 1) {
-          if (!isLoading && replyCount < (thread.ReplyCount ?? Number.POSITIVE_INFINITY)) {
-            setPage((previousPage) => previousPage + 1);
-          }
+        setSelectedIndex((previous) =>
+          Math.min(previous + 1, replyItems.length - 1),
+        );
+        if (
+          selectedIndex === replyItems.length - 1 &&
+          !isLoading &&
+          replyCount < (thread.ReplyCount ?? Infinity)
+        ) {
+          setPage((previousPage) => previousPage + 1);
         }
       }
     },
@@ -102,8 +105,12 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
         paddingBottom={1}
       >
         <Text>{' '.repeat(6)}</Text>
-        <Text bold color={theme.header}>No.{thread.id}</Text>
-        <Text bold color={theme.header}>{selectedIndex + 1} / {thread.ReplyCount}</Text>
+        <Text bold color={theme.header}>
+          No.{thread.id}
+        </Text>
+        <Text bold color={theme.header}>
+          {selectedIndex + 1} / {thread.ReplyCount}
+        </Text>
       </Box>
       <ScrollList ref={listRef} selectedIndex={selectedIndex}>
         {replyItems.map((item, index) => {

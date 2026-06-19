@@ -44,7 +44,7 @@ export const useTheme = (): Theme => useContext(ThemeContext);
 
 export const ThemeProvider = ThemeContext.Provider;
 
-// themes
+// Themes
 export const pttTheme: Theme = {
   name: 'ptt',
   background: '#000000',
@@ -61,4 +61,4 @@ export const pttTheme: Theme = {
   link: '#0000EE',
   admin: '#FF0000',
   replyBackground: '#111111',
-}
+};
