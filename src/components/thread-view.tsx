@@ -85,7 +85,7 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
       if (key.downArrow) {
         setSelectedIndex((previous) => Math.min(previous + 1, replyItems.length - 1));
         if (selectedIndex === replyItems.length - 1) {
-          if (!isLoading && replyItems && replyCount < (thread.ReplyCount ?? Number.POSITIVE_INFINITY)) {
+          if (!isLoading && replyCount < (thread.ReplyCount ?? Number.POSITIVE_INFINITY)) {
             setPage((previousPage) => previousPage + 1);
           }
         }
