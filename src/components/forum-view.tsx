@@ -52,10 +52,12 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
       }
 
       if (key.leftArrow) {
+        setSelectedIndex(0);
         setPage((previous) => Math.max(previous - 1, 1));
       }
 
       if (key.rightArrow) {
+        setSelectedIndex(0);
         setPage((previous) => previous + 1);
       }
     },
