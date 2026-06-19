@@ -53,10 +53,8 @@ export type ThreadBase = {
   Hide?: number;
 };
 
-export type Reply = ThreadBase;
-
 export type ForumThread = ThreadBase & {
-  Replies: Reply[];
+  Replies: ThreadBase[];
   RemainReplies: number;
 };
 

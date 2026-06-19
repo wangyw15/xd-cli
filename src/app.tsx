@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, useStdout, useApp, useInput, useFocusManager } from 'ink';
 import { NmbxdClient } from '@/api/client.js';
 import type { Forum, ForumInfo, ForumThread } from '@/api/types';
@@ -6,6 +6,7 @@ import ForumList from '@/components/forum-list';
 import ForumView from '@/components/forum-view';
 import ThreadView from '@/components/thread-view';
 import { ThemeProvider, defaultTheme, pttTheme } from '@/theme';
+import { Configuration, getCookie, loadConfig } from './config';
 
 const client = new NmbxdClient();
 
@@ -28,7 +29,11 @@ export default function App() {
   const [isForumListVisible, setIsForumListVisible] = useState(true);
   const [theme, setTheme] = useState(defaultTheme);
   const [themeIndex, setThemeIndex] = useState(0);
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [config, setConfig] = useState<Configuration>({
+    'cookie': '',
+    'feed_uuid': '',
+    'cookies': [],
+  });
 
   stdout.on('resize', () => {
     setWidth(stdout.columns);
@@ -36,9 +41,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    stdout.write('\u{1B}[?1049h');
-    forceUpdate();
-
     return () => {
       stdout.write('\u{1B}[?1049l');
     };
@@ -52,6 +54,12 @@ export default function App() {
 
   useEffect(() => {
     void client.getForumList().then(setForums);
+    loadConfig()
+      .then((data) => {
+        setConfig(data);
+        client.setUserhash(getCookie(data)?.cookie);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {

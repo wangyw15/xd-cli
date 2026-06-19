@@ -1,4 +1,3 @@
-import process from 'node:process';
 import { render } from 'ink';
 import meow from 'meow';
 import App from '@/app';
@@ -25,5 +24,5 @@ const cli = meow(
   },
 );
 
-process.stdout.write('\u{1B}[?1049h');
+Bun.stdout.write('\u{1B}[?1049h');
 render(<App />);

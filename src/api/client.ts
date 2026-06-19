@@ -39,7 +39,7 @@ export class NmbxdClient {
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {};
     if (this.userhash !== undefined && this.userhash !== '') {
-      headers.Cookie = `userhash=${encodeURIComponent(this.userhash)}`;
+      headers.Cookie = `userhash=${this.userhash}`;
     }
 
     return headers;
