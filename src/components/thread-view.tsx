@@ -41,7 +41,7 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
     setSelectedIndex(0);
     setPage(1);
     client
-      .getThread(thread.id, page)
+      .getThread(thread.id, 1)
       .then((data) => {
         setThreadItems([data, ...data.Replies]);
       })

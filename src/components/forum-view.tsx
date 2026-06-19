@@ -31,7 +31,7 @@ export default function ForumView({
     setSelectedIndex(0);
     setPage(1);
     client
-      .showf(Number(forum.id), page)
+      .showf(Number(forum.id), 1)
       .then(setThreads)
       .catch(() => {
         setThreads([]);
