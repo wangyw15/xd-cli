@@ -19,6 +19,7 @@ export default function App() {
   const [selectedForum, setSelectedForum] = useState<ForumInfo | undefined>(
     undefined,
   );
+  const [showForumList, setShowForumList] = useState(true);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   stdout.on('resize', () => {
@@ -49,6 +50,10 @@ export default function App() {
     if (input === 'q' || key.escape) {
       exit();
     }
+
+    if (input === 's') {
+      setShowForumList((previous) => !previous);
+    }
   });
 
   return (
@@ -59,17 +64,17 @@ export default function App() {
         flexDirection="row"
         backgroundColor={defaultTheme.background}
       >
-        <ForumList
-          id="forum-list"
-          forums={forums}
-          onSelectForum={setSelectedForum}
-        />
+        {showForumList ? (
+          <ForumList
+            id="forum-list"
+            forums={forums}
+            onSelectForum={setSelectedForum}
+          />
+        ) : undefined}
         {selectedForum ? (
           <ForumView id="forum-view" forum={selectedForum} client={client} />
         ) : (
-          <Box
-            height="100%"
-          />
+          <Box height="100%" />
         )}
       </Box>
     </ThemeProvider>

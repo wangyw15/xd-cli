@@ -51,7 +51,9 @@ export default function ForumList({
       }
 
       if (key.downArrow) {
-        setSelectedIndex((previous) => Math.min(previous + 1, items.length - 1));
+        setSelectedIndex((previous) =>
+          Math.min(previous + 1, items.length - 1),
+        );
       }
 
       if (key.return) {
@@ -66,12 +68,7 @@ export default function ForumList({
   );
 
   return (
-    <Box
-      width="20"
-      height="100%"
-      paddingX={1}
-      flexDirection="column"
-    >
+    <Box width="20" height="100%" paddingX={1} flexDirection="column">
       <Box justifyContent="center" backgroundColor={theme.headerBackground}>
         <Text bold color={theme.header}>
           版面
@@ -81,14 +78,23 @@ export default function ForumList({
         {items.map((item, index) => {
           const isSelected = index === selectedIndex && isFocused;
           const isActive = index === activeIndex;
-          const isHeader = item.type === "header";
+          const isHeader = item.type === 'header';
 
           return (
-            <Box width="100%" backgroundColor={isSelected ? theme.selectedBackground : undefined}>
+            <Box
+              width="100%"
+              backgroundColor={
+                isSelected ? theme.selectedBackground : undefined
+              }
+            >
               <Text
                 key={item.id}
                 color={
-                  isActive ? theme.active : (isHeader ? theme.forumListHeader : theme.forumListSub)
+                  isActive
+                    ? theme.active
+                    : isHeader
+                      ? theme.forumListHeader
+                      : theme.forumListSub
                 }
               >
                 {isHeader ? '' : '  '}

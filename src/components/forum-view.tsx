@@ -55,11 +55,7 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
   );
 
   return (
-    <Box
-      height="100%"
-      paddingX={1}
-      flexDirection="column"
-    >
+    <Box height="100%" paddingX={1} flexDirection="column">
       <Box
         justifyContent="space-between"
         backgroundColor={theme.headerBackground}
@@ -78,14 +74,18 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
             <Box
               width="100%"
               key={thread.id}
-              backgroundColor={isSelected ? theme.selectedBackground : theme.replyBackground}
+              backgroundColor={
+                isSelected ? theme.selectedBackground : theme.replyBackground
+              }
               flexDirection="column"
               marginBottom={1}
               padding={1}
             >
               <Box flexDirection="row" justifyContent="space-between">
                 <Box>
-                  <Text color={thread.admin ? theme.admin : theme.foreground}>{thread.user_hash}</Text>
+                  <Text color={thread.admin ? theme.admin : theme.foreground}>
+                    {thread.user_hash}
+                  </Text>
                   <Text color={theme.foreground}> {thread.now}</Text>
                 </Box>
                 <Text color={theme.foreground}>[{thread.ReplyCount}]</Text>
@@ -96,7 +96,9 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
                 </Box>
               ) : undefined}
               <Box marginTop={1}>
-                <Text color={theme.foreground}>{stripHtmlTags(thread.content)}</Text>
+                <Text color={theme.foreground}>
+                  {stripHtmlTags(thread.content)}
+                </Text>
               </Box>
             </Box>
           );
