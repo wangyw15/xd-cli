@@ -17,7 +17,7 @@ export type Theme = {
   sage: string;
   link: string;
   admin: string;
-  // po: string;
+  // Po
   replyBackground: string;
 };
 

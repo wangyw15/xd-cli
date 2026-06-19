@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Box, Text, useFocus, useInput } from 'ink';
 import { ScrollList, type ScrollListRef } from 'ink-scroll-list';
 import type { Forum, ForumInfo } from '@/api/types';

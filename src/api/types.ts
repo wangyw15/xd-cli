@@ -13,20 +13,20 @@ export type Forum = {
 
 export type ForumInfo = {
   id: string;
-  fgroup: string;
-  sort: string;
+  fgroup?: string;
+  sort?: string;
   name: string;
-  showName: string;
+  showName?: string;
   msg: string;
-  interval: string;
-  safe_mode: string;
-  auto_delete: string;
-  thread_count: string;
-  permission_level: string;
-  forum_fuse_id: string;
-  createdAt: string;
-  updateAt: string;
-  status: string;
+  interval?: string;
+  safe_mode?: string;
+  auto_delete?: string;
+  thread_count?: string;
+  permission_level?: string;
+  forum_fuse_id?: string;
+  createdAt?: string;
+  updateAt?: string;
+  status?: string;
 };
 
 export type Timeline = {
@@ -39,8 +39,8 @@ export type Timeline = {
 
 export type ThreadBase = {
   id: number;
-  fid: number;
-  ReplyCount: number;
+  fid?: number;
+  ReplyCount?: number;
   img: string;
   ext: string;
   now: string;
@@ -48,9 +48,9 @@ export type ThreadBase = {
   name: string;
   title: string;
   content: string;
-  sage: number;
+  sage?: number;
   admin: number;
-  Hide: number;
+  Hide?: number;
 };
 
 export type Reply = ThreadBase;

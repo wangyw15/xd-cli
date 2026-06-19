@@ -10,9 +10,10 @@ type ForumViewProps = {
   id?: string;
   forum: ForumInfo;
   client: NmbxdClient;
+  onSelectThread?: (forum: ForumThread) => void;
 };
 
-export default function ForumView({ id, forum, client }: ForumViewProps) {
+export default function ForumView({ id, forum, client, onSelectThread }: ForumViewProps) {
   const theme = useTheme();
   const { isFocused } = useFocus({ id, autoFocus: false });
   const listRef = useRef<ScrollListRef>(null);
@@ -50,6 +51,11 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
         setSelectedIndex(0);
         setPage((previous) => previous + 1);
       }
+
+      if (key.return) {
+        const selected = threads[selectedIndex];
+        onSelectThread?.(selected);
+      }
     },
     { isActive: isFocused },
   );
@@ -61,9 +67,9 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
         backgroundColor={theme.headerBackground}
         paddingBottom={1}
       >
-        <Text>{'      '}</Text>
+        <Text>{' '.repeat(6)}</Text>
         <Text bold color={theme.header}>
-          {forum.showName ? forum.showName : forum.name}
+          {forum.showName || forum.name}
         </Text>
         <Text color={theme.foreground}>第 {page} 页</Text>
       </Box>
@@ -83,7 +89,7 @@ export default function ForumView({ id, forum, client }: ForumViewProps) {
             >
               <Box flexDirection="row" justifyContent="space-between">
                 <Box>
-                  <Text color={thread.admin ? theme.admin : theme.foreground}>
+                  <Text color={thread.admin > 0 ? theme.admin : theme.foreground}>
                     {thread.user_hash}
                   </Text>
                   <Text color={theme.foreground}> {thread.now}</Text>

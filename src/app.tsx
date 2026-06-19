@@ -1,9 +1,10 @@
 import { useEffect, useReducer, useState } from 'react';
 import { Box, useStdout, useApp, useInput, useFocusManager } from 'ink';
 import { NmbxdClient } from '@/api/client.js';
-import type { Forum, ForumInfo } from '@/api/types';
+import type { Forum, ForumInfo, ForumThread } from '@/api/types';
 import ForumList from '@/components/forum-list';
 import ForumView from '@/components/forum-view';
+import ThreadView from '@/components/thread-view';
 import { ThemeProvider, defaultTheme } from '@/theme';
 
 const client = new NmbxdClient();
@@ -19,7 +20,10 @@ export default function App() {
   const [selectedForum, setSelectedForum] = useState<ForumInfo | undefined>(
     undefined,
   );
-  const [showForumList, setShowForumList] = useState(true);
+  const [selectedThread, setSelectedThread] = useState<ForumThread | undefined>(
+    undefined,
+  );
+  const [isForumListVisible, setIsForumListVisible] = useState(true);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   stdout.on('resize', () => {
@@ -48,11 +52,16 @@ export default function App() {
 
   useInput((input, key) => {
     if (input === 'q' || key.escape) {
-      exit();
+      if (selectedThread) {
+        setSelectedThread(undefined);
+        focus('forum-view');
+      } else{
+        exit();
+      }
     }
 
     if (input === 's') {
-      setShowForumList((previous) => !previous);
+      setIsForumListVisible((previous) => !previous);
     }
   });
 
@@ -64,18 +73,36 @@ export default function App() {
         flexDirection="row"
         backgroundColor={defaultTheme.background}
       >
-        {showForumList ? (
-          <ForumList
-            id="forum-list"
-            forums={forums}
-            onSelectForum={setSelectedForum}
+        <Box
+          width="100%"
+          height="100%"
+          display={selectedThread ? 'none' : 'flex'}
+        >
+          {isForumListVisible ? (
+            <ForumList
+              id="forum-list"
+              forums={forums}
+              onSelectForum={setSelectedForum}
+            />
+          ) : undefined}
+          {selectedForum ? (
+            <ForumView
+              id="forum-view"
+              forum={selectedForum}
+              client={client}
+              onSelectThread={setSelectedThread}
+            />
+          ) : (
+            <Box height="100%" />
+          )}
+        </Box>
+        {selectedThread ? (
+          <ThreadView
+            id="thread-view"
+            thread={selectedThread}
+            client={client}
           />
         ) : undefined}
-        {selectedForum ? (
-          <ForumView id="forum-view" forum={selectedForum} client={client} />
-        ) : (
-          <Box height="100%" />
-        )}
       </Box>
     </ThemeProvider>
   );
