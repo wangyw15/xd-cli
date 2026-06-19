@@ -20,15 +20,37 @@ export default function ForumView({ id, forum, client, onSelectThread }: ForumVi
   const [page, setPage] = useState(1);
   const [threads, setThreads] = useState<ForumThread[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    setSelectedIndex(0);
+    setPage(1);
     client
       .showf(Number(forum.id), page)
       .then(setThreads)
       .catch(() => {
         setThreads([]);
       });
-  }, [client, forum, page]);
+  }, [forum]);
+
+  useEffect(() => {
+    if (page === 1 && !isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+    client
+      .showf(Number(forum.id), page)
+      .then((data) => setThreads(((previous) => {
+        return [...previous, ...data];
+      })))
+      .catch(() => {
+        // Keep existing data on error
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [page]);
 
   useInput(
     (_input, key) => {
@@ -40,16 +62,10 @@ export default function ForumView({ id, forum, client, onSelectThread }: ForumVi
         setSelectedIndex((previous) =>
           Math.min(previous + 1, threads.length - 1),
         );
-      }
 
-      if (key.leftArrow) {
-        setSelectedIndex(0);
-        setPage((previous) => Math.max(previous - 1, 1));
-      }
-
-      if (key.rightArrow) {
-        setSelectedIndex(0);
-        setPage((previous) => previous + 1);
+        if (selectedIndex === threads.length - 1 && !isLoading) {
+          setPage((previous) => previous + 1);
+        }
       }
 
       if (key.return) {
@@ -63,15 +79,13 @@ export default function ForumView({ id, forum, client, onSelectThread }: ForumVi
   return (
     <Box height="100%" paddingX={1} flexDirection="column">
       <Box
-        justifyContent="space-between"
+        justifyContent="center"
         backgroundColor={theme.headerBackground}
         paddingBottom={1}
       >
-        <Text>{' '.repeat(6)}</Text>
         <Text bold color={theme.header}>
           {forum.showName || forum.name}
         </Text>
-        <Text color={theme.foreground}>第 {page} 页</Text>
       </Box>
       <ScrollList ref={listRef} selectedIndex={selectedIndex}>
         {threads.map((thread, index) => {
