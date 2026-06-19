@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "types": ["bun"],
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"]
+}
