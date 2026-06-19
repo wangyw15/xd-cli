@@ -10,11 +10,17 @@ type ThreadViewProps = {
   id?: string;
   thread: ForumThread;
   client: NmbxdClient;
+  tips?: boolean;
 };
 
 type ThreadItem = Thread | ThreadReply;
 
-export default function ThreadView({ id, thread, client }: ThreadViewProps) {
+export default function ThreadView({
+  id,
+  thread,
+  client,
+  tips,
+}: ThreadViewProps) {
   const theme = useTheme();
   const focusId = id ?? 'thread-view';
   const { isFocused } = useFocus({ id: focusId, autoFocus: false });
@@ -22,19 +28,28 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
   const listRef = useRef<ScrollListRef>(null);
   const [replyItems, setThreadItems] = useState<ThreadItem[]>([]);
   const [replyCount, setReplyCount] = useState(0);
+  const [tipsCount, setTipsCount] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTipsVisible, setTipsVisible] = useState(tips ?? true);
 
-  const calculateReplyCount = () =>
-    replyItems.filter((reply) => reply.user_hash === 'Tips').length;
+  const removeTips = (replies: ThreadItem[]) =>
+    replies.filter((reply) => reply.user_hash !== 'Tips');
 
   useEffect(() => {
     focus(focusId);
   });
 
   useEffect(() => {
-    setReplyCount(calculateReplyCount());
+    setReplyCount(
+      replyItems.filter((reply) => reply.user_hash !== 'Tips').length,
+    );
+    if (isTipsVisible) {
+      setTipsCount(
+        replyItems.filter((reply) => reply.user_hash === 'Tips').length,
+      );
+    }
   }, [replyItems]);
 
   useEffect(() => {
@@ -43,7 +58,12 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
     client
       .getThread(thread.id, 1)
       .then((data) => {
-        setThreadItems([data, ...data.Replies]);
+        let replies = data.Replies;
+        if (!isTipsVisible) {
+          replies = removeTips(replies);
+        }
+
+        setThreadItems([data, ...replies]);
       })
       .catch(() => {
         setThreadItems([]);
@@ -61,9 +81,13 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
       .then((data) => {
         setThreadItems((previous) => {
           const existingIds = new Set(previous.map((reply) => reply.id));
-          const newReplies = data.Replies.filter(
+          let newReplies = data.Replies.filter(
             (reply) => !existingIds.has(reply.id),
           );
+          if (!isTipsVisible) {
+            newReplies = removeTips(newReplies);
+          }
+
           return [...previous, ...newReplies];
         });
       })
@@ -109,7 +133,7 @@ export default function ThreadView({ id, thread, client }: ThreadViewProps) {
           No.{thread.id}
         </Text>
         <Text bold color={theme.header}>
-          {selectedIndex + 1} / {thread.ReplyCount}
+          {selectedIndex + 1} / {(thread.ReplyCount ?? 0) + 1 + tipsCount}
         </Text>
       </Box>
       <ScrollList ref={listRef} selectedIndex={selectedIndex}>

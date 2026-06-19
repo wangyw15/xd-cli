@@ -6,18 +6,27 @@ export type Cookie = {
 export type Configuration = {
   cookie: string;
   feed_uuid: string;
+  tips: boolean;
   cookies: Cookie[];
+};
+
+export const DEFAULT_CONFIG: Configuration = {
+  cookie: '',
+  feed_uuid: '',
+  tips: true,
+  cookies: [],
 };
 
 export async function loadConfig(
   filePath = 'config.toml',
 ): Promise<Configuration> {
   const configFile = Bun.file(filePath);
-  if (!configFile.exists()) {
+  if (!(await configFile.exists())) {
     throw new Error(`${filePath} not found.`);
   }
+
   const config = Bun.TOML.parse(await configFile.text()) as Configuration;
-  return config;
+  return { ...DEFAULT_CONFIG, ...config };
 }
 
 export function getCookie(

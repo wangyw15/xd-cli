@@ -6,7 +6,12 @@ import ForumList from '@/components/forum-list';
 import ForumView from '@/components/forum-view';
 import ThreadView from '@/components/thread-view';
 import { ThemeProvider, defaultTheme, pttTheme } from '@/theme';
-import { type Configuration, getCookie, loadConfig } from '@/config';
+import {
+  type Configuration,
+  DEFAULT_CONFIG,
+  getCookie,
+  loadConfig,
+} from '@/config';
 
 const client = new NmbxdClient();
 
@@ -29,11 +34,7 @@ export default function App() {
   const [isForumListVisible, setIsForumListVisible] = useState(true);
   const [theme, setTheme] = useState(defaultTheme);
   const [themeIndex, setThemeIndex] = useState(0);
-  const [config, setConfig] = useState<Configuration>({
-    cookie: '',
-    feed_uuid: '',
-    cookies: [],
-  });
+  const [config, setConfig] = useState<Configuration>(DEFAULT_CONFIG);
 
   stdout.on('resize', () => {
     setWidth(stdout.columns);
@@ -122,6 +123,7 @@ export default function App() {
             id="thread-view"
             thread={selectedThread}
             client={client}
+            tips={config.tips}
           />
         ) : undefined}
       </Box>
