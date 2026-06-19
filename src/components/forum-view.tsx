@@ -26,15 +26,24 @@ export default function ForumView({
   const [threads, setThreads] = useState<ForumThread[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     setSelectedIndex(0);
     setPage(1);
     client
       .showf(Number(forum.id), 1)
-      .then(setThreads)
-      .catch(() => {
+      .then((data) => {
+        setThreads(data);
+        setErrorMessage('');
+      })
+      .catch((error: unknown) => {
         setThreads([]);
+        if (error instanceof Error) {
+          setErrorMessage(error.message);
+        } else {
+          setErrorMessage(JSON.stringify(error));
+        }
       });
   }, [forum]);
 
@@ -48,9 +57,14 @@ export default function ForumView({
       .showf(Number(forum.id), page)
       .then((data) => {
         setThreads((previous) => [...previous, ...data]);
+        setErrorMessage('');
       })
-      .catch(() => {
-        // Keep existing data on error
+      .catch((error: unknown) => {
+        if (error instanceof Error) {
+          setErrorMessage(error.message);
+        } else {
+          setErrorMessage(JSON.stringify(error));
+        }
       })
       .finally(() => {
         setIsLoading(false);
@@ -82,7 +96,7 @@ export default function ForumView({
   );
 
   return (
-    <Box height="100%" paddingX={1} flexDirection="column">
+    <Box height="100%" paddingX={1} flexDirection="column" width="100%">
       <Box
         justifyContent="center"
         backgroundColor={theme.headerBackground}
@@ -92,45 +106,51 @@ export default function ForumView({
           {forum.showName || forum.name}
         </Text>
       </Box>
-      <ScrollList ref={listRef} selectedIndex={selectedIndex}>
-        {threads.map((thread, index) => {
-          const isSelected = index === selectedIndex && isFocused;
-          return (
-            <Box
-              width="100%"
-              key={thread.id}
-              backgroundColor={
-                isSelected ? theme.selectedBackground : theme.replyBackground
-              }
-              flexDirection="column"
-              marginBottom={1}
-              padding={1}
-            >
-              <Box flexDirection="row" justifyContent="space-between">
-                <Box>
-                  <Text
-                    color={thread.admin > 0 ? theme.admin : theme.foreground}
-                  >
-                    {thread.user_hash}
+      {errorMessage ? (
+        <Box justifyContent="center">
+          <Text color={theme.sage}>{errorMessage}</Text>
+        </Box>
+      ) : (
+        <ScrollList ref={listRef} selectedIndex={selectedIndex}>
+          {threads.map((thread, index) => {
+            const isSelected = index === selectedIndex && isFocused;
+            return (
+              <Box
+                width="100%"
+                key={thread.id}
+                backgroundColor={
+                  isSelected ? theme.selectedBackground : theme.replyBackground
+                }
+                flexDirection="column"
+                marginBottom={1}
+                padding={1}
+              >
+                <Box flexDirection="row" justifyContent="space-between">
+                  <Box>
+                    <Text
+                      color={thread.admin > 0 ? theme.admin : theme.foreground}
+                    >
+                      {thread.user_hash}
+                    </Text>
+                    <Text color={theme.foreground}> {thread.now}</Text>
+                  </Box>
+                  <Text color={theme.foreground}>[{thread.ReplyCount}]</Text>
+                </Box>
+                {thread.sage === 1 ? (
+                  <Box>
+                    <Text color={theme.sage}>SAGE</Text>
+                  </Box>
+                ) : undefined}
+                <Box marginTop={1}>
+                  <Text color={theme.foreground}>
+                    {stripHtmlTags(thread.content)}
                   </Text>
-                  <Text color={theme.foreground}> {thread.now}</Text>
                 </Box>
-                <Text color={theme.foreground}>[{thread.ReplyCount}]</Text>
               </Box>
-              {thread.sage === 1 ? (
-                <Box>
-                  <Text color={theme.sage}>SAGE</Text>
-                </Box>
-              ) : undefined}
-              <Box marginTop={1}>
-                <Text color={theme.foreground}>
-                  {stripHtmlTags(thread.content)}
-                </Text>
-              </Box>
-            </Box>
-          );
-        })}
-      </ScrollList>
+            );
+          })}
+        </ScrollList>
+      )}
     </Box>
   );
 }

@@ -6,7 +6,7 @@ import ForumList from '@/components/forum-list';
 import ForumView from '@/components/forum-view';
 import ThreadView from '@/components/thread-view';
 import { ThemeProvider, defaultTheme, pttTheme } from '@/theme';
-import { Configuration, getCookie, loadConfig } from './config';
+import { type Configuration, getCookie, loadConfig } from '@/config';
 
 const client = new NmbxdClient();
 
@@ -30,9 +30,9 @@ export default function App() {
   const [theme, setTheme] = useState(defaultTheme);
   const [themeIndex, setThemeIndex] = useState(0);
   const [config, setConfig] = useState<Configuration>({
-    'cookie': '',
-    'feed_uuid': '',
-    'cookies': [],
+    cookie: '',
+    feed_uuid: '',
+    cookies: [],
   });
 
   stdout.on('resize', () => {
@@ -40,11 +40,12 @@ export default function App() {
     setHeight(stdout.rows);
   });
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       stdout.write('\u{1B}[?1049l');
-    };
-  }, [stdout]);
+    },
+    [stdout],
+  );
 
   useEffect(() => {
     if (selectedForum) {

@@ -2,6 +2,7 @@ import type {
   AddFeedResult,
   CDNPath,
   DelFeedResult,
+  FailResponse,
   FeedThread,
   Forum,
   ForumThread,
@@ -122,7 +123,15 @@ export class NmbxdClient {
   }
 
   async showf(id: number, page?: number): Promise<ForumThread[]> {
-    return this.get<ForumThread[]>('showf', { id, page });
+    const response = await this.get<ForumThread[] | FailResponse>('showf', {
+      id,
+      page,
+    });
+    if ('error' in response) {
+      throw new Error(response.error);
+    }
+
+    return response;
   }
 
   async getTimeline(id: number, page?: number): Promise<ForumThread[]> {

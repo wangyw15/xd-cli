@@ -148,6 +148,11 @@ export type ReplyThreadOptions = {
   water?: boolean;
 };
 
+export type FailResponse = {
+  success: boolean;
+  error: string;
+};
+
 export type AddFeedResult = string;
 
 export type DelFeedResult = string;

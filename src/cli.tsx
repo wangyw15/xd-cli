@@ -24,5 +24,5 @@ const cli = meow(
   },
 );
 
-Bun.stdout.write('\u{1B}[?1049h');
+await Bun.stdout.write('\u{1B}[?1049h');
 render(<App />);

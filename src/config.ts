@@ -14,7 +14,7 @@ export async function loadConfig(
 ): Promise<Configuration> {
   const configFile = Bun.file(filePath);
   if (!configFile.exists()) {
-    Promise.reject();
+    throw new Error(`${filePath} not found.`);
   }
   const config = Bun.TOML.parse(await configFile.text()) as Configuration;
   return config;
