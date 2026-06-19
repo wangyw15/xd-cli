@@ -31,6 +31,8 @@ export default function ForumView({
   useEffect(() => {
     setSelectedIndex(0);
     setPage(1);
+    setIsLoading(true);
+
     client
       .showf(Number(forum.id), 1)
       .then((data) => {
@@ -44,6 +46,9 @@ export default function ForumView({
         } else {
           setErrorMessage(JSON.stringify(error));
         }
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, [forum]);
 
