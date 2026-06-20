@@ -7,20 +7,11 @@ const cli = meow(
   Usage
     $ xd-cli
 
-  Options
-    --name  Your name
-
   Examples
-    $ xd-cli --name=Jane
-    Hello, Jane
+    $ xd-cli
 `,
   {
     importMeta: import.meta,
-    flags: {
-      name: {
-        type: 'string',
-      },
-    },
   },
 );
 
