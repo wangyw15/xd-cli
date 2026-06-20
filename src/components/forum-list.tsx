@@ -1,28 +1,35 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box, Text, useFocus, useInput } from 'ink';
 import { ScrollList, type ScrollListRef } from 'ink-scroll-list';
-import type { Forum, ForumInfo } from '@/api/types';
+import type { Forum, ForumInfo, Timeline } from '@/api/types';
 import { useTheme } from '@/theme';
 import { stripHtmlTags } from '@/utils';
+import { type NmbxdClient } from '@/api';
 
 type ForumListProps = {
   id?: string;
-  forums: Forum[];
-  onSelectForum?: (forum: ForumInfo) => void;
+  client: NmbxdClient;
+  onSelect?: (item: ForumInfo | Timeline) => void;
 };
 
 type ListItem =
   | { type: 'header'; id: string; name: string }
-  | { type: 'sub'; id: string; name: string; forum: ForumInfo };
+  | { type: 'forum'; id: string; name: string; forum: ForumInfo }
+  | { type: 'timeline'; id: string; name: string; timeline: Timeline };
 
-const buildItems = (forums: Forum[]): ListItem[] => {
+const buildForumItems = (forums: Forum[]): ListItem[] => {
   const items: ListItem[] = [];
   for (const forum of forums) {
     items.push({ type: 'header', id: `h-${forum.id}`, name: forum.name });
     for (const sub of forum.forums) {
+      // Ignore timeline
+      if (sub.id === '-1') {
+        continue;
+      }
+
       items.push({
-        type: 'sub',
-        id: `s-${sub.id}`,
+        type: 'forum',
+        id: `f-${sub.id}`,
         name: sub.showName || sub.name,
         forum: sub,
       });
@@ -32,17 +39,39 @@ const buildItems = (forums: Forum[]): ListItem[] => {
   return items;
 };
 
+const buildTimelineItems = (timelines: Timeline[]): ListItem[] => {
+  const items: ListItem[] = [{ type: 'header', id: 'h--1', name: '时间线' }];
+  for (const timeline of timelines) {
+    items.push({
+      type: 'timeline',
+      id: `t-${timeline.id}`,
+      name: timeline.display_name || timeline.name,
+      timeline,
+    });
+  }
+
+  return items;
+};
+
 export default function ForumList({
   id,
-  forums,
-  onSelectForum,
+  client,
+  onSelect: onSelectItem,
 }: ForumListProps) {
   const theme = useTheme();
   const { isFocused } = useFocus({ id, autoFocus: true });
   const listRef = useRef<ScrollListRef>(null);
-  const items = buildItems(forums);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
+  const [items, setItems] = useState<ListItem[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const forums = await client.getForumList();
+      const timelines = await client.getTimelineList();
+      setItems([...buildTimelineItems(timelines), ...buildForumItems(forums)]);
+    })();
+  }, []);
 
   useInput(
     (_input, key) => {
@@ -58,9 +87,11 @@ export default function ForumList({
 
       if (key.return) {
         const selected = items[selectedIndex];
-        if (selected?.type === 'sub') {
+        if (selected?.type !== 'header') {
           setActiveIndex(selectedIndex);
-          onSelectForum?.(selected.forum);
+          onSelectItem?.(
+            selected?.type === 'forum' ? selected.forum : selected.timeline,
+          );
         }
       }
     },
@@ -69,7 +100,12 @@ export default function ForumList({
 
   return (
     <Box width="20" height="100%" paddingX={1} flexDirection="column">
-      <Box justifyContent="center" backgroundColor={theme.headerBackground}>
+      <Box
+        justifyContent="center"
+        backgroundColor={theme.headerBackground}
+        paddingBottom={1}
+        width="100%"
+      >
         <Text bold color={theme.header}>
           版面
         </Text>

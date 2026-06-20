@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, useStdout, useApp, useInput, useFocusManager } from 'ink';
 import { NmbxdClient } from '@/api/client.js';
-import type { Forum, ForumInfo, ForumThread } from '@/api/types';
+import type { ForumInfo, ForumThread, Timeline } from '@/api/types';
 import ForumList from '@/components/forum-list';
 import ForumView from '@/components/forum-view';
 import ThreadView from '@/components/thread-view';
@@ -24,10 +24,9 @@ export default function App() {
 
   const [width, setWidth] = useState(stdout.columns);
   const [height, setHeight] = useState(stdout.rows);
-  const [forums, setForums] = useState<Forum[]>([]);
-  const [selectedForum, setSelectedForum] = useState<ForumInfo | undefined>(
-    undefined,
-  );
+  const [selectedSub, setSelectedSub] = useState<
+    ForumInfo | Timeline | undefined
+  >(undefined);
   const [selectedThread, setSelectedThread] = useState<ForumThread | undefined>(
     undefined,
   );
@@ -49,13 +48,12 @@ export default function App() {
   );
 
   useEffect(() => {
-    if (selectedForum) {
+    if (selectedSub) {
       focus('forum-view');
     }
-  }, [selectedForum, focus]);
+  }, [selectedSub, focus]);
 
   useEffect(() => {
-    void client.getForumList().then(setForums);
     loadConfig()
       .then((data) => {
         setConfig(data);
@@ -103,14 +101,14 @@ export default function App() {
           {isForumListVisible ? (
             <ForumList
               id="forum-list"
-              forums={forums}
-              onSelectForum={setSelectedForum}
+              client={client}
+              onSelect={setSelectedSub}
             />
           ) : undefined}
-          {selectedForum ? (
+          {selectedSub ? (
             <ForumView
               id="forum-view"
-              forum={selectedForum}
+              sub={selectedSub}
               client={client}
               onSelectThread={setSelectedThread}
             />

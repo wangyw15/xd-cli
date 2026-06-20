@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Text, useFocus, useInput } from 'ink';
 import { ScrollList, type ScrollListRef } from 'ink-scroll-list';
-import type { ForumInfo, ForumThread } from '@/api/types';
+import type { ForumInfo, ForumThread, Timeline } from '@/api/types';
 import type { NmbxdClient } from '@/api/client';
 import { useTheme } from '@/theme';
 import { stripHtmlTags } from '@/utils';
 
 type ForumViewProps = {
   id?: string;
-  forum: ForumInfo;
+  sub: ForumInfo | Timeline;
   client: NmbxdClient;
-  onSelectThread?: (forum: ForumThread) => void;
+  onSelectThread?: (thread: ForumThread) => void;
 };
 
 export default function ForumView({
   id,
-  forum,
+  sub,
   client,
   onSelectThread,
 }: ForumViewProps) {
@@ -27,14 +27,18 @@ export default function ForumView({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const isTimeLine = (_sub: ForumInfo | Timeline): _sub is Timeline =>
+    'display_name' in _sub;
 
   useEffect(() => {
     setSelectedIndex(0);
     setPage(1);
     setIsLoading(true);
 
-    client
-      .showf(Number(forum.id), 1)
+    (isTimeLine(sub)
+      ? client.getTimeline(sub.id, 1)
+      : client.showf(Number(sub.id), 1)
+    )
       .then((data) => {
         setThreads(data);
         setErrorMessage('');
@@ -50,7 +54,7 @@ export default function ForumView({
       .finally(() => {
         setIsLoading(false);
       });
-  }, [forum]);
+  }, [sub]);
 
   useEffect(() => {
     if (page === 1 && !isLoading) {
@@ -58,8 +62,11 @@ export default function ForumView({
     }
 
     setIsLoading(true);
-    client
-      .showf(Number(forum.id), page)
+
+    (isTimeLine(sub)
+      ? client.getTimeline(sub.id, page)
+      : client.showf(Number(sub.id), page)
+    )
       .then((data) => {
         setThreads((previous) => [...previous, ...data]);
         setErrorMessage('');
@@ -108,7 +115,7 @@ export default function ForumView({
         paddingBottom={1}
       >
         <Text bold color={theme.header}>
-          {forum.showName || forum.name}
+          {(isTimeLine(sub) ? sub.display_name : sub.showName) || sub.name}
         </Text>
       </Box>
       {errorMessage ? (
